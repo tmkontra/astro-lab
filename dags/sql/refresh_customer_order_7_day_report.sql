@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS customer_order_7_day_report (
 );
 
 DELETE FROM customer_order_7_day_report
-WHERE report_date = CURRENT_DATE;
+WHERE report_date = %(report_date)s::date;
 
 INSERT INTO customer_order_7_day_report (
     report_date,
@@ -24,7 +24,7 @@ INSERT INTO customer_order_7_day_report (
     most_recent_order_ts
 )
 SELECT
-    CURRENT_DATE AS report_date,
+    %(report_date)s::date AS report_date,
     c.customer_id,
     c.customer_name,
     c.customer_tier,
@@ -35,8 +35,8 @@ SELECT
 FROM customers c
 JOIN orders o
     ON o.customer_id = c.customer_id
-WHERE o.order_ts >= CURRENT_DATE - INTERVAL '7 days'
-    AND o.order_ts < CURRENT_DATE + INTERVAL '1 day'
+WHERE o.order_ts >= %(report_date)s::date - INTERVAL '7 days'
+    AND o.order_ts < %(report_date)s::date + INTERVAL '1 day'
     AND o.order_status IN ('paid', 'shipped', 'delivered')
 GROUP BY c.customer_id, c.customer_name, c.customer_tier
 ORDER BY total_revenue DESC;

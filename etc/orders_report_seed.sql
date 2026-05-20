@@ -31,9 +31,7 @@ CREATE TABLE IF NOT EXISTS customer_order_7_day_report (
     PRIMARY KEY (report_date, customer_id)
 );
 
-TRUNCATE TABLE customer_order_7_day_report;
-TRUNCATE TABLE orders;
-TRUNCATE TABLE customers;
+TRUNCATE TABLE customer_order_7_day_report, orders, customers;
 
 INSERT INTO customers (
     customer_id,
