@@ -55,9 +55,9 @@ def scheduled_serial_weather_pipeline():
                     "periods": [
                         {
                             "name": "Today",
-                            "temperature": 72,
+                            "temperature": 95,
                             "temperatureUnit": "F",
-                            "windSpeed": "9 mph",
+                            "windSpeed": "14 mph",
                             "shortForecast": "Partly Sunny",
                         },
                         {
