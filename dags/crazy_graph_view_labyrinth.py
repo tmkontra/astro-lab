@@ -8,7 +8,7 @@ appears to coordinate with every other station before a final launch gate.
 
 from __future__ import annotations
 
-from airflow.sdk import dag, task
+from airflow.sdk import dag, task, task_group
 from pendulum import datetime
 
 
@@ -32,19 +32,56 @@ def crazy_graph_view_labyrinth():
     def node(task_id: str):
         return checkpoint.override(task_id=task_id)(task_id)
 
-    ignition = node("ignition")
+    @task_group(group_id="ignition_layer")
+    def ignition_layer():
+        return node("ignition")
 
-    intake = [node(f"intake_sensor_{idx}") for idx in range(1, 9)]
-    normalize = [node(f"normalize_signal_{idx}") for idx in range(1, 9)]
-    enrich = [node(f"enrich_context_{idx}") for idx in range(1, 9)]
-    route = [node(f"route_packet_{idx}") for idx in range(1, 9)]
-    arbiters = [node(f"arbiter_ring_{idx}") for idx in range(1, 5)]
-    simulations = [node(f"simulation_lane_{idx}") for idx in range(1, 9)]
-    auditors = [node(f"audit_spoke_{idx}") for idx in range(1, 7)]
-    publish = [node(f"publish_channel_{idx}") for idx in range(1, 7)]
+    @task_group(group_id="intake_layer")
+    def intake_layer():
+        return [node(f"intake_sensor_{idx}") for idx in range(1, 9)]
 
-    final_gate = node("final_launch_gate")
-    confetti = node("confetti_for_the_graph_view")
+    @task_group(group_id="normalize_layer")
+    def normalize_layer():
+        return [node(f"normalize_signal_{idx}") for idx in range(1, 9)]
+
+    @task_group(group_id="enrich_layer")
+    def enrich_layer():
+        return [node(f"enrich_context_{idx}") for idx in range(1, 9)]
+
+    @task_group(group_id="route_layer")
+    def route_layer():
+        return [node(f"route_packet_{idx}") for idx in range(1, 9)]
+
+    @task_group(group_id="arbiter_layer")
+    def arbiter_layer():
+        return [node(f"arbiter_ring_{idx}") for idx in range(1, 5)]
+
+    @task_group(group_id="simulation_layer")
+    def simulation_layer():
+        return [node(f"simulation_lane_{idx}") for idx in range(1, 9)]
+
+    @task_group(group_id="audit_layer")
+    def audit_layer():
+        return [node(f"audit_spoke_{idx}") for idx in range(1, 7)]
+
+    @task_group(group_id="publish_layer")
+    def publish_layer():
+        return [node(f"publish_channel_{idx}") for idx in range(1, 7)]
+
+    @task_group(group_id="finale_layer")
+    def finale_layer():
+        return node("final_launch_gate"), node("confetti_for_the_graph_view")
+
+    ignition = ignition_layer()
+    intake = intake_layer()
+    normalize = normalize_layer()
+    enrich = enrich_layer()
+    route = route_layer()
+    arbiters = arbiter_layer()
+    simulations = simulation_layer()
+    auditors = audit_layer()
+    publish = publish_layer()
+    final_gate, confetti = finale_layer()
 
     ignition >> intake
 
